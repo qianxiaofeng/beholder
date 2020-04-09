@@ -61,17 +61,14 @@ class Archiver {
     }
 
     template<typename T>
-    void serialize(T &data, Archiver &ar) {
+    typename std::enable_if_t<std::is_class_v<T>, T>
+    serialize(T &data, Archiver &ar) {
       this->ArchiveHolder::get().member_visit(ar);
     }
 
-    template<>
-    void serialize(int &data, Archiver &ar) {
-      ar.its_os << data;
-    }
-
-    template<>
-    void serialize(uint64_t &data, Archiver &ar) {
+    template<typename T>
+    typename std::enable_if_t<std::is_arithmetic_v<T>, T>
+    serialize(T &data, Archiver &ar) {
       ar.its_os << data;
     }
   };

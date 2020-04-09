@@ -3,17 +3,10 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/archive/archive.hpp"
 #include "../../src/archive/archiver.hpp"
-#include "../../src/archive/binary_output_archive.hpp"
 
 struct MyDataA {
   uint64_t a, b, c, d;
-
-  template<typename Archive>
-  void archive(Archive &ar) {
-    ar(a, b, c, d);
-  }
 
   void member_visit(Archiver &ar) {
     ar(a, b, c, d);
@@ -35,9 +28,10 @@ TEST(archive, hello) { //NOLINT
 //  a(d1, d2);
 
   Archiver aaa{std::cout};
-//  aaa.save(da1);
+  aaa.save(da1);
   aaa.save(da1);
   aaa.save(10);
   aaa.save(da2);
+  aaa.save(uint64_t(123));
 
 }
