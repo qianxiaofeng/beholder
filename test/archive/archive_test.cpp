@@ -31,11 +31,11 @@ struct MyDataB {
   uint64_t x, y, z;
 
   auto reflect() {
-    return std::make_tuple(
+    return std::vector{
         std::make_pair("x", x),
         std::make_pair("y", y),
         std::make_pair("z", z)
-    );
+    };
   }
 };
 
@@ -45,7 +45,8 @@ struct membuf : std::streambuf {
   }
 };
 
-TEST(archive, input_archive) { //NOLINT
+TEST(archive, input_archive_int) { //NOLINT
+  using beholder::archive::InputArchiver;
   int a, b, c, d;
   a = b = c = d = 100;
 
@@ -69,4 +70,26 @@ TEST(archive, input_archive) { //NOLINT
   EXPECT_EQ(b, 2);
   EXPECT_EQ(c, 3);
   EXPECT_EQ(d, 4);
+}
+
+TEST(archive, input_archive_struct) { //NOLINT
+  using beholder::archive::InputArchiver;
+  MyDataB d{};
+  unsigned char buffer[] = {0x01, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x02, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x03, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            '\0'
+  };
+  membuf sbuf((char *) buffer, (char *) buffer + sizeof(buffer) - 1);
+  std::istream in(&sbuf);
+
+  InputArchiver iar(in);
+  iar.load(d);
+
+  EXPECT_EQ(d.x, 1);
+  EXPECT_EQ(d.y, 2);
+  EXPECT_EQ(d.z, 3);
 }

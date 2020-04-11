@@ -6,23 +6,24 @@
 #define BEHOLDER_SRC_ARCHIVE_INPUT_ARCHIVER_HPP_
 #include <iostream>
 #include "type/binary_data.hpp"
+#include "trait/is_binary_data.hpp"
+
+namespace beholder::archive {
+using beholder::archive::trait::IsBinaryDataV;
 
 class InputArchiver {
  public:
   explicit InputArchiver(std::istream &is) : its_is(is) {}
 
   template<typename T>
-  int load(T &t) {
-    int old_pos = its_is.tellg();
-    IArchiveContainer<T, IArchiveHolder> container(t);
+  void load(T &t) {
+    IArchiveContainer<T> container(t);
     container.load(*this);
-    int new_pos = its_is.tellg();
-    return new_pos - old_pos;
   }
 
   void load_binary(void *const data, std::streamsize size) {
     auto const readSize = its_is.rdbuf()->sgetn(reinterpret_cast<char *>( data ), size);
-    assert(size==readSize);
+    assert(size==readSize);//TODO maybe throw exception
   }
 
  private:
@@ -46,19 +47,44 @@ class InputArchiver {
     T *data_;
   };
 
-  template<typename T, template<class> class IArchiveHolder>
+  class IArchiveModel {
+   public:
+    explicit IArchiveModel() = default;
+
+    template<typename T>
+    typename std::enable_if_t<IsBinaryDataV<T>, void>
+    load(InputArchiver &iar, IArchiveHolder<T> &holder) {
+      beholder::archive::type::load_binary<InputArchiver, T>(iar, holder.get());
+    }
+
+    template<typename T>
+    typename std::enable_if_t<std::is_class_v<T>, void>
+    load(InputArchiver &iar, IArchiveHolder<T> &t) {
+      std::vector members = t.get().reflect();
+      for (auto itr = members.begin(); itr!=members.end(); ++itr) {
+        iar.load(itr->second);
+      }
+      printf("\n");
+    }
+  };
+
+  template<typename T>
   class IArchiveContainer : public IArchiveConcept {
    public:
-//    using IArchiveHolder<T>::IArchiveHolder;
 
-    explicit IArchiveContainer(T &t) : holder_(IArchiveHolder(t)) {}
+    explicit IArchiveContainer(T &t) : model_(new IArchiveModel()), holder_(new IArchiveHolder<T>(t)) {}
+
     void load(InputArchiver &iar) override {
-      beholder::archive::type::load_binary<InputArchiver, T>(iar, holder_.get());
+//      beholder::archive::type::load_binary<InputArchiver, T>(iar, holder_.get());
+      model_->load(iar, *holder_);
     }
+
    private:
-    IArchiveHolder<T> holder_;
+    IArchiveModel *model_;
+    IArchiveHolder<T> *holder_;
   };
 
 };
+}
 
 #endif //BEHOLDER_SRC_ARCHIVE_INPUT_ARCHIVER_HPP_
