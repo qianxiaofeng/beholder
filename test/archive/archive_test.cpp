@@ -6,6 +6,8 @@
 #include <tuple>
 #include "../../src/archive/archiver.hpp"
 #include "../../src/archive/input_archiver.hpp"
+#include "../../src/archive/binary_iarchiver.hpp"
+#include "../../src/archive/iarchiver.hpp"
 
 struct MyDataA {
   uint64_t a, b, c, d;
@@ -87,6 +89,59 @@ TEST(archive, input_archive_struct) { //NOLINT
   std::istream in(&sbuf);
 
   InputArchiver iar(in);
+  iar.load(d);
+
+  EXPECT_EQ(d.x, 1);
+  EXPECT_EQ(d.y, 2);
+  EXPECT_EQ(d.z, 3);
+}
+
+struct MyDataD {
+  uint64_t x, y, z;
+
+  template<typename Archiver>
+  void serialize(Archiver &ar) {
+    ar(x, y, z);
+  }
+};
+
+TEST(iarchive, simple) {//NOLINT
+  using beholder::archive::BinaryIArchiver;
+
+  unsigned char buffer[] = {0x01, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x02, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x03, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            '\0'
+  };
+  membuf sbuf((char *) buffer, (char *) buffer + sizeof(buffer) - 1);
+  std::istream in(&sbuf);
+  BinaryIArchiver iar{in};
+
+  int a = 100;
+  iar.load(a);
+
+  EXPECT_EQ(a, 1);
+}
+
+TEST(iarchive, load_struct) {//NOLINT
+  using beholder::archive::BinaryIArchiver;
+
+  unsigned char buffer[] = {0x01, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x02, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x03, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            '\0'
+  };
+  membuf sbuf((char *) buffer, (char *) buffer + sizeof(buffer) - 1);
+  std::istream in(&sbuf);
+  BinaryIArchiver iar{in};
+
+  MyDataD d{};
   iar.load(d);
 
   EXPECT_EQ(d.x, 1);
