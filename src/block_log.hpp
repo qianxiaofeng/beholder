@@ -15,8 +15,7 @@ struct BlockLog {
   uint64_t pos; //at end of file
   friend std::ostream &operator<<(std::ostream &os, const BlockLog &log);
 
-  SignedBlock header;
-  BlockTimestamp header_timestamp;
+  SignedBlock block_;
   };
 } // namespace beholder
 

@@ -10,6 +10,11 @@
 struct BlockTimestamp {
   uint32_t slot;
   friend std::ostream &operator<<(std::ostream &os, const BlockTimestamp &timestamp);
+
+  template<typename Archiver>
+  void serialize(Archiver &ar) {
+    ar(slot);
+  }
 };
 
 #endif //BEHOLDER_SRC_TYPE_BLOCK_TIMESTAMP_HPP_

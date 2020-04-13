@@ -19,7 +19,7 @@ void BlockLogReader::read_all(BlockLog &blog) {
   iar->load(blog.first_block_num);
   read_tail_uint64(blog.pos);
   file.seekg(blog.pos);
-  iar->load(blog.header_timestamp.slot);//expect 1163721896, expect pos 587274
+  iar->load(blog.block_.header);
 }
 
 void BlockLogReader::read_tail_uint64(uint64_t &to) {
