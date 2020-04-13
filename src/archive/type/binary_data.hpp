@@ -4,7 +4,6 @@
 
 #ifndef BEHOLDER_SRC_ARCHIVE_TYPE_BINARY_DATA_HPP_
 #define BEHOLDER_SRC_ARCHIVE_TYPE_BINARY_DATA_HPP_
-#include "../input_archiver.hpp"
 #include "../trait/is_binary_data.hpp"
 namespace beholder::archive::type {
 using beholder::archive::trait::IsBinaryDataV;
