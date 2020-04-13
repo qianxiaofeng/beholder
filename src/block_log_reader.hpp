@@ -8,15 +8,17 @@
 #include "block_log.hpp"
 #include <fstream>
 #include <string>
+#include "archive/binary_iarchiver.hpp"
 namespace beholder {
 class BlockLogReader {
  public:
-  void open(std::string path);
+  void open(std::string const &path);
   void read_all(BlockLog &blog);
-  void read_uint32(uint32_t& to);
-  void read_tail_uint64(uint64_t& pos);
  private:
   std::ifstream file;
+  std::unique_ptr<archive::BinaryIArchiver> iar;
+
+  void read_tail_uint64(uint64_t &pos);
 };
 }
 #endif // BEHOLDER_BLOCK_LOG_READER_HPP
